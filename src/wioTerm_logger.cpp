@@ -64,19 +64,32 @@ RTC_SAMD51 rtc;
 //char daysOfTheWeek[7][12] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 
 
+void readData() {
+    //Temperature1 1W
 
+    //Temperature2 Analog
+    //Temperature3 Analog
 
-
-
+    //AM2302 https://github.com/Seeed-Studio/Grove_Temperature_And_Humidity_Sensor
+}
 
 
 ///***************************************************************
+#include "FreeRam.h"
 
+void printFree() {
+
+    Serial.print("[");
+    Serial.print(FreeRam());
+    Serial.print("]");
+}
+uint32_t heap_start;
 void setup() {
 
     Serial.begin(115200);
 
     while (!Serial); // wait for serial port to connect. Needed for native USB
+    printFree();
     ui_display.begin();
     ui_display.fillscreen("Modular Sensors");
     // setup network before rtc check 
@@ -107,8 +120,6 @@ void setup() {
     // get and print the current rtc time
     now_dt = rtc.now();
     Serial.print("RTC time is: ");
-    //#define TMPBUF_SZ 37
-    //char tmpBuf[TMPBUF_SZ];
 
     Serial.println(now_dt.timestamp(DateTime::TIMESTAMP_FULL));
 
@@ -125,33 +136,41 @@ void setup() {
 
     // start millisdelays timers as required, adjust to suit requirements
     //updateDelay.start(12 * 60 * 60 * 1000); // update time via ntp every 12 hrs
-    updateDelay.start(60 * 1000); // update time via ntp every 1 minute
+    #define UPDATE_MINUTES 15
+    Serial.print("Update every mins: ");
+    Serial.println(UPDATE_MINUTES);
+    updateDelay.start(UPDATE_MINUTES*60 * 1000); // update time via ntp
 
 }
 
 void loop() {
+    //#define TMPBUF_SZ 37
+    //char tmpBuf[TMPBUF_SZ];
 
     if (updateDelay.justFinished()) { // 12 hour loop
-        // repeat timer
-        updateDelay.repeat(); // repeat
+        
+        updateDelay.repeat(); // timer
 
+        Serial.print(++readings_cnt);
+        Serial.print("[");
+        Serial.print(FreeRam());
+        Serial.print("]");
         // update rtc time
         devicetime = ntph.getNTPtime();
         if (devicetime == 0) {
-            Serial.println("Failed to get time from network time server.");
+            Serial.println(" Failed to get time from network time server.");
         }
         else {
             rtc.adjust(DateTime(devicetime));
             //Serial.println("");
-            Serial.print(++readings_cnt);
+
             //Serial.print("rtc time updated.");
             // get and print the adjusted rtc time
             now_dt = rtc.now();
             Serial.print(" time is: ");
             Serial.println(now_dt.timestamp(DateTime::TIMESTAMP_FULL));
-            //readData();
+            readData();
 
-            //ui_display.fillscreen(now_dt.timestamp(DateTime::TIMESTAMP_FULL).c_str());
             ui_display.update3(now_dt.timestamp(DateTime::TIMESTAMP_FULL).c_str(),1.0,2.0,3.0);
         }
     }

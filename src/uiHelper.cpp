@@ -1,5 +1,5 @@
 /**
- * @file ntpHelper.cpp
+ * @file uiHelper.cpp
  * @copyright 2020 Neil Hancock
  * Used for Wio Terminal testing,  mostly mashup 
  * @author neil hancock <neilh20@wllw.net>
